@@ -1,0 +1,13 @@
+#compiled Go binaries
+*.exe
+*.out
+
+# macOs
+.DS_Store
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Environment files
+.env
