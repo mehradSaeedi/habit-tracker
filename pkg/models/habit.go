@@ -7,9 +7,9 @@ import (
 type Habit struct {
 	gorm.Model
 
-	Name        string
-	Description string
-	Frequency   string
+	Name        string `josn:"name"`
+	Description string `josn:"description"`
+	Frequency   string `josn:"frequency"`
 
-	Sessions []Session
+	Sessions []Session `json:"sessions,omitempty"`
 }

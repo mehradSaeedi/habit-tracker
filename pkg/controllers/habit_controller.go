@@ -9,6 +9,7 @@ import (
 	"github.com/mehradSaeedi/habit-tracker/pkg/models"
 )
 
+// ---CREATE---
 func CreateHabit(w http.ResponseWriter, r *http.Request) {
 	var habit models.Habit
 	err := json.NewDecoder(r.Body).Decode(&habit)
@@ -29,6 +30,7 @@ func CreateHabit(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// ---READ---
 func GetHabits(w http.ResponseWriter, r *http.Request) {
 	var habits []models.Habit
 
@@ -42,33 +44,6 @@ func GetHabits(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(habits)
 }
 
-func DeleteHabit(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
-
-	result := config.DB.Delete(&models.Habit{}, id)
-
-	if result.Error != nil {
-		http.Error(w, "Could not delete habit", http.StatusInternalServerError)
-		return
-	}
-	if result.RowsAffected == 0 {
-		http.Error(w, "Habit not found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "habit deleted",
-	})
-
-}
-
 func GetHabitByID(w http.ResponseWriter, r *http.Request) {
 	var habit models.Habit
 	idStr := r.PathValue("id")
@@ -79,7 +54,7 @@ func GetHabitByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := config.DB.First(&habit, id)
+	result := config.DB.Preload("Sessions").First(&habit, id)
 	if result.Error != nil {
 		http.Error(w, "Habit not found", http.StatusNotFound)
 		return
@@ -89,6 +64,7 @@ func GetHabitByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(habit)
 }
 
+// ---UPDATE---
 func UpdateHabit(w http.ResponseWriter, r *http.Request) {
 	var habit models.Habit
 	var updateHabit models.Habit
@@ -127,4 +103,32 @@ func UpdateHabit(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(habit)
+}
+
+// ---DELETE---
+func DeleteHabit(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	result := config.DB.Delete(&models.Habit{}, id)
+
+	if result.Error != nil {
+		http.Error(w, "Could not delete habit", http.StatusInternalServerError)
+		return
+	}
+	if result.RowsAffected == 0 {
+		http.Error(w, "Habit not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "habit deleted",
+	})
+
 }

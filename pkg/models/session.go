@@ -9,10 +9,10 @@ import (
 type Session struct {
 	gorm.Model
 
-	HabitID uint
-	Habit   Habit
+	HabitID uint  `json:"habitId"`
+	Habit   Habit `json:"habit,omitzero"`
 
-	Date            time.Time
-	DurationMinutes uint
-	Notes           string
+	Date            time.Time `json:"date"`
+	DurationMinutes uint      `json:"durationMinutes"`
+	Notes           string    `json:"notes"`
 }

@@ -14,9 +14,8 @@ func RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /habits/{id}", controllers.UpdateHabit)
 	mux.HandleFunc("DELETE /habits/{id}", controllers.DeleteHabit)
 
-	mux.HandleFunc("POST /sessions", controllers.CreateSession)
-	mux.HandleFunc("GET /sessions", controllers.GetSessions)
-	mux.HandleFunc("GET /sessions/{id}", controllers.GetSessionByID)
+	mux.HandleFunc("POST /habits/{id}/sessions", controllers.CreateSession)
+	mux.HandleFunc("GET /habits/{id}/sessions", controllers.GetSessionsForHabit)
 	mux.HandleFunc("PUT /sessions/{id}", controllers.UpdateSession)
 	mux.HandleFunc("DELETE /sessions/{id}", controllers.DeleteSession)
 
