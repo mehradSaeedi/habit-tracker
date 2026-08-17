@@ -13,3 +13,10 @@ type Habit struct {
 
 	Sessions []Session `json:"sessions,omitempty"`
 }
+
+type HabitStats struct {
+	TotalSessions  int     `json:"total_sessions"`
+	TotalMinutes   int     `json:"total_minutes"`
+	AverageMinutes float64 `json:"average_minutes"`
+	LongestSession int     `json:"longest_session"`
+}

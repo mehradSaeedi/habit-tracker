@@ -8,6 +8,8 @@ import (
 
 func RegisterRoutes(mux *http.ServeMux) {
 
+	mux.HandleFunc("GET /habits/{id}/stats", controllers.GetHabitStats)
+
 	mux.HandleFunc("POST /habits", controllers.CreateHabit)
 	mux.HandleFunc("GET /habits", controllers.GetHabits)
 	mux.HandleFunc("GET /habits/{id}", controllers.GetHabitByID)

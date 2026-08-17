@@ -132,3 +132,31 @@ func DeleteHabit(w http.ResponseWriter, r *http.Request) {
 	})
 
 }
+
+func GetHabitStats(w http.ResponseWriter, r *http.Request) {
+	habitIdStr := r.PathValue("id")
+	habitId, err := strconv.Atoi(habitIdStr)
+	if err != nil {
+		http.Error(w, "Invalid habit ID", http.StatusBadRequest)
+		return
+	}
+
+	var stats models.HabitStats
+
+	result := config.DB.Model(&models.Session{}).Select(`
+	COUNT(*) AS total_sessions,
+	COALESCE(SUM(duration_minutes), 0) AS total_minutes,
+	COALESCE(AVG(duration_minutes), 0) AS average_minutes,
+	COALESCE(MAX(duration_minutes), 0) AS longest_session
+	`).Where("habit_id = ?", habitId).Scan(&stats)
+	if result.Error != nil {
+		http.Error(w, "Could not calculate statistics", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(stats)
+	if err != nil {
+		http.Error(w, "Could not encode statistics JSON", http.StatusInternalServerError)
+		return
+	}
+}
