@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/mehradSaeedi/habit-tracker/pkg/config"
 	"github.com/mehradSaeedi/habit-tracker/pkg/models"
@@ -17,8 +18,7 @@ func CreateSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var habit models.Habit
-	result := config.DB.First(&habit, id)
+	result := config.DB.First(&models.Habit{}, id)
 	if result.Error != nil {
 		http.Error(w, "Habit not found", http.StatusNotFound)
 		return
@@ -58,6 +58,8 @@ func GetSessionsForHabit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	query := r.URL.Query()
+
 	var habit models.Habit
 	if err := config.DB.First(&habit, id).Error; err != nil {
 		http.Error(w, "Habit not found", http.StatusNotFound)
@@ -65,9 +67,34 @@ func GetSessionsForHabit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var sessions []models.Session
-	result := config.DB.Where("habit_id = ?", id).Find(&sessions)
+	dbQuery := config.DB.Where("habit_id = ?", id)
+
+	layout := "2006-01-02"
+
+	var fromDate time.Time
+	from := query.Get("from")
+	if from != "" {
+		fromDate, err = time.Parse(layout, from)
+		if err != nil {
+			http.Error(w, "Invalid query", http.StatusBadRequest)
+			return
+		}
+		dbQuery = dbQuery.Where("date >= ?", fromDate)
+	}
+	to := query.Get("to")
+	var toDate time.Time
+	if to != "" {
+		toDate, err = time.Parse(layout, to)
+		if err != nil {
+			http.Error(w, "Invalid query", http.StatusBadRequest)
+			return
+		}
+		dbQuery = dbQuery.Where("date <= ?", toDate)
+	}
+
+	result := dbQuery.Find(&sessions)
 	if result.Error != nil {
-		http.Error(w, "Could not fetch sessions", http.StatusNotFound)
+		http.Error(w, "Could not fetch sessions", http.StatusInternalServerError)
 		return
 	}
 

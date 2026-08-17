@@ -133,6 +133,7 @@ func DeleteHabit(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// ---STATS---
 func GetHabitStats(w http.ResponseWriter, r *http.Request) {
 	habitIdStr := r.PathValue("id")
 	habitId, err := strconv.Atoi(habitIdStr)
@@ -159,4 +160,30 @@ func GetHabitStats(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not encode statistics JSON", http.StatusInternalServerError)
 		return
 	}
+}
+
+func ClearSessions(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid habit ID", http.StatusBadRequest)
+		return
+	}
+
+	result := config.DB.First(&models.Habit{}, id)
+	if result.RowsAffected == 0 {
+		http.Error(w, "Habit not found", http.StatusNotFound)
+		return
+	}
+
+	result = config.DB.Where("habit_id = ?", id).Delete(&models.Session{})
+	if result.Error != nil {
+		http.Error(w, "Could not delete sessions", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Sessions Cleared",
+	})
 }
